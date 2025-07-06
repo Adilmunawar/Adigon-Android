@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -26,16 +27,36 @@ function GoogleButton() {
     const { pending } = useFormStatus();
     const [isSigningIn, setIsSigningIn] = useState(false);
     const router = useRouter();
+    const { toast } = useToast();
 
     const handleGoogleSignIn = async () => {
+        const isFirebaseConfigured =
+          process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+          process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'YOUR_API_KEY';
+
+        if (!isFirebaseConfigured) {
+            toast({
+                title: 'Configuration Error',
+                description:
+                'Google Sign-In is not configured. Please add your Firebase project credentials to the .env file.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
         setIsSigningIn(true);
         const provider = new GoogleAuthProvider();
         try {
             await signInWithPopup(auth, provider);
             router.push('/chat');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Google sign-in error", error);
-            // TODO: Show an error to the user via toast
+            toast({
+                title: 'Sign-Up Error',
+                description:
+                'Failed to sign up with Google. Please check your Firebase configuration and try again.',
+                variant: 'destructive',
+            });
         } finally {
             setIsSigningIn(false);
         }
