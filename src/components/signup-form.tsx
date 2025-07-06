@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, isFirebaseConfigured } from "@/lib/firebase";
 import { useFormStatus } from "react-dom";
 import { signup } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,7 @@ function GoogleButton() {
     const { toast } = useToast();
 
     const handleGoogleSignIn = async () => {
-        const isFirebaseConfigured =
-          process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
-          process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'YOUR_API_KEY';
-
-        if (!isFirebaseConfigured) {
+        if (!isFirebaseConfigured || !auth) {
             toast({
                 title: 'Configuration Error',
                 description:
