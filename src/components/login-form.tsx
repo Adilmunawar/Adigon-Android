@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useFormState, useFormStatus } from "react-dom";
 import { login } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
@@ -20,9 +24,30 @@ function SubmitButton() {
 
 function GoogleButton() {
     const { pending } = useFormStatus();
+    const [isSigningIn, setIsSigningIn] = useState(false);
+    const router = useRouter();
+
+    const handleGoogleSignIn = async () => {
+        setIsSigningIn(true);
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+            router.push('/chat');
+        } catch (error) {
+            console.error("Google sign-in error", error);
+            // TODO: Show an error to the user via toast
+        } finally {
+            setIsSigningIn(false);
+        }
+    };
+
     return (
-        <Button variant="outline" className="w-full" type="button" disabled={pending}>
-            <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 74.9C307.4 116.5 280.7 104 248 104c-73.8 0-134.3 60.3-134.3 135s60.5 135 134.3 135c84.3 0 115.7-64.3 120.2-96.8H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+        <Button variant="outline" className="w-full" type="button" disabled={pending || isSigningIn} onClick={handleGoogleSignIn}>
+            {isSigningIn ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 74.9C307.4 116.5 280.7 104 248 104c-73.8 0-134.3 60.3-134.3 135s60.5 135 134.3 135c84.3 0 115.7-64.3 120.2-96.8H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+            )}
             Sign in with Google
         </Button>
     )

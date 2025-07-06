@@ -11,13 +11,15 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateCodeInputSchema = z.object({
-  description: z.string().describe('A description of the code snippet to generate.'),
-  language: z.string().optional().describe('The programming language for the code snippet.  If not provided, the AI will attempt to infer the language.'),
+  description: z.string().describe('A description of the code to generate.'),
 });
 export type GenerateCodeInput = z.infer<typeof GenerateCodeInputSchema>;
 
 const GenerateCodeOutputSchema = z.object({
-  code: z.string().describe('The generated code snippet.'),
+  files: z.array(z.object({
+    fileName: z.string().describe("The name of the file."),
+    code: z.string().describe("The code content for the file."),
+  })).describe("An array of files with their names and code content."),
 });
 export type GenerateCodeOutput = z.infer<typeof GenerateCodeOutputSchema>;
 
@@ -29,15 +31,11 @@ const prompt = ai.definePrompt({
   name: 'generateCodePrompt',
   input: {schema: GenerateCodeInputSchema},
   output: {schema: GenerateCodeOutputSchema},
-  prompt: `You are an expert software developer.  You will generate a code snippet based on the user's description.  The code should be well-formatted and easy to understand.
+  prompt: `You are an expert software developer. You will generate one or more code files based on the user's description. The code should be well-formatted and easy to understand. Provide the file name and the code for each file.
 
-Description: {{{description}}}
+If the request can be satisfied with a single file, return a single element in the 'files' array. Name the file appropriately based on the user's request.
 
-{{#if language}}
-Language: {{{language}}}
-{{/if}}
-
-Code: `,
+Description: {{{description}}}`,
 });
 
 const generateCodeFlow = ai.defineFlow(
