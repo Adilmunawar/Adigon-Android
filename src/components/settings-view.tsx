@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { saveSettings } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useActionState } from "react";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -36,7 +36,7 @@ function SubmitButton() {
 }
 
 export function SettingsView() {
-  const [state, action] = useFormState(saveSettings, undefined);
+  const [state, action] = useActionState(saveSettings, undefined);
   const { toast } = useToast();
 
   useEffect(() => {
